@@ -94,13 +94,21 @@ contract AutonomousAgent is PrecompileConsumer {
     //  Setup — Fund RitualWallet
     // ─────────────────────────────────────────────────────────────────────────
 
-    /// @notice Pre-fund the RitualWallet for this EOA (msg.sender) before start.
-    ///         The SPC async precompile checks the *EOA's* RitualWallet balance.
-    ///         Call this from your deployer wallet before calling start().
-    ///         Lock for 900 blocks (~30 min at 2s blocks) as a safe minimum.
+    /// @notice Fund THIS CONTRACT's RitualWallet (for the agent's own scheduled wakeup fees).
+    ///         Call this before start() so the agent can pay for its precompile calls.
     function depositToRitualWallet(uint256 lockBlocks) external payable onlyOwner {
         require(msg.value > 0, "send RITUAL");
         RITUAL_WALLET.deposit{value: msg.value}(lockBlocks);
+        emit RitualWalletFunded(msg.value, lockBlocks);
+    }
+
+    /// @notice Fund YOUR EOA's RitualWallet (needed before calling judgeAll on AIJudgeV2).
+    ///         Uses depositFor so the credit goes to msg.sender (your wallet address),
+    ///         NOT to this contract. The LLM precompile checks the EOA's balance.
+    ///         Call with VALUE = amount to deposit (e.g. 0.5 RITUAL), lockBlocks = 900.
+    function depositForEOA(uint256 lockBlocks) external payable onlyOwner {
+        require(msg.value > 0, "send RITUAL");
+        RITUAL_WALLET.depositFor{value: msg.value}(msg.sender, lockBlocks);
         emit RitualWalletFunded(msg.value, lockBlocks);
     }
 
