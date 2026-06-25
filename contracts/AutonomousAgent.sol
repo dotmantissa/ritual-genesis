@@ -46,6 +46,7 @@ interface IScheduler {
 
 interface IRitualWallet {
     function deposit(uint256 lockDuration) external payable;
+    function depositFor(address user, uint256 lockDuration) external payable;
     function balanceOf(address) external view returns (uint256);
     function lockUntil(address) external view returns (uint256);
 }
