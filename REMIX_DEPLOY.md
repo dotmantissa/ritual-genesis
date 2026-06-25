@@ -156,18 +156,20 @@ interface IRitualWallet {
 
 ### 9a — Create a Bounty
 
-First, get your deadline number. Run this in the Remix console (bottom panel) or browser console (F12 → Console tab):
+> ⚠️ **Ritual uses millisecond timestamps.** `block.timestamp` on Ritual is in ms (e.g. `1782416215707`), not seconds. Your deadline must also be in ms.
+
+Get your deadline by running this in the **Remix console** (not the browser console):
 
 ```javascript
-Math.floor(Date.now()/1000) + 600
+Date.now() + 3600000
 ```
 
-It prints a number like `1751053500`. **Copy that number.**
+It prints a **13-digit** number like `1782420000000`. Copy it.
 
-Then in Remix → AIJudgeV2 → `createBounty`, fill in:
+Then in Remix → AIJudgeV2 → `createBounty`:
 - `title`: `What is the most promising use of on-chain AI?`
 - `rubric`: `Judge on clarity, originality, and feasibility. Pick the single best answer.`
-- `deadline`: paste the number from above (e.g. `1751053500`) — do NOT paste the expression
+- `deadline`: paste the 13-digit ms number (e.g. `1782420000000`)
 - **VALUE:** `0.1` ether
 
 Note the `bountyId` from the tx logs (usually `1`).

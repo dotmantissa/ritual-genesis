@@ -126,7 +126,9 @@ contract AIJudgeV2 is PrecompileConsumer {
     /// @notice Create a new bounty. The ETH sent becomes the prize.
     /// @param title    Short title shown to participants.
     /// @param rubric   Judging criteria passed verbatim to the LLM.
-    /// @param deadline UNIX timestamp. Reveals open only after this time.
+    /// @param deadline UNIX timestamp in MILLISECONDS (Ritual uses ms, not seconds).
+    ///                 In JS: Date.now() + 3_600_000  (= 1 hour from now)
+    ///                 Must be greater than block.timestamp (which is also in ms on Ritual).
     function createBounty(
         string calldata title,
         string calldata rubric,
