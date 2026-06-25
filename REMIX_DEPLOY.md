@@ -102,57 +102,53 @@ Compile each file — you should see green checkmarks.
 
 ## Step 8 — Fund RitualWallet (CRITICAL before judgeAll)
 
-The LLM precompile checks your **EOA's** RitualWallet balance. Use **Option A** (easiest — no console needed).
+The LLM precompile checks your **EOA's** RitualWallet balance before it will run.
+**No new contract deployment needed** — use Remix's "At Address" feature to talk to the already-deployed RitualWallet system contract.
 
-### Option A — Deploy the helper contract (recommended)
+### Steps
 
-1. Create a new file in Remix called `contracts/RitualWalletFunder.sol` and paste this:
+1. **Create** `contracts/IRitualWallet.sol` in Remix and paste this:
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
 interface IRitualWallet {
+    function deposit(uint256 lockDuration) external payable;
     function depositFor(address user, uint256 lockDuration) external payable;
-}
-
-/// @notice Helper: fund YOUR EOA's RitualWallet from Remix without touching the console.
-contract RitualWalletFunder {
-    IRitualWallet constant RW =
-        IRitualWallet(0x532F0dF0896F353d8C3DD8cc134e8129DA2a3948);
-
-    /// @param lockBlocks  How many blocks to lock for (900 = ~30 min).
-    /// Send ETH with this call — it goes straight into your EOA's RitualWallet.
-    function fundMyEOA(uint256 lockBlocks) external payable {
-        RW.depositFor{value: msg.value}(msg.sender, lockBlocks);
-    }
+    function withdraw(uint256 amount) external;
+    function balanceOf(address account) external view returns (uint256);
+    function lockUntil(address account) external view returns (uint256);
 }
 ```
 
-2. Compile it (0.8.24, optimizer on).
-3. Deploy it (no args, no ETH needed to deploy).
-4. In the deployed contract panel, call `fundMyEOA`:
-   - `lockBlocks`: `900`
-   - **VALUE (ETH):** `0.5`
-5. Confirm in MetaMask. Done — your EOA is funded.
+2. **Compile** it (0.8.24, any settings — it's just an interface).
 
-> You can ignore `RitualWalletFunder` after this — it's a one-off utility.
+3. Go to **Deploy & Run Transactions**.
 
-### Option B — Remix console (ethers v5 syntax)
+4. In the **CONTRACT** dropdown, select `IRitualWallet`.
 
-> Remix injects **ethers v5**, not v6. If you see a timeout, use Option A instead.
+5. In the **"At Address"** field (NOT the Deploy button), paste:
+   ```
+   0x532F0dF0896F353d8C3DD8cc134e8129DA2a3948
+   ```
 
-```javascript
-// Ethers v5 syntax — note: providers.Web3Provider, utils.parseEther, no bigint 'n' suffix
-const abi = [{"inputs":[{"name":"lockDuration","type":"uint256"}],"name":"deposit","outputs":[],"stateMutability":"payable","type":"function"}];
-const provider = new ethers.providers.Web3Provider(window.ethereum);
-await provider.send("eth_requestAccounts", []);
-const signer = provider.getSigner();
-const rw = new ethers.Contract("0x532F0dF0896F353d8C3DD8cc134e8129DA2a3948", abi, signer);
-const tx = await rw.deposit(900, { value: ethers.utils.parseEther("0.5") });
-await tx.wait();
-console.log("RitualWallet funded:", tx.hash);
-```
+6. Click the **"At Address"** button (orange/blue button next to the field).
+   A panel appears under "Deployed Contracts" — this is the live RitualWallet.
+
+7. In that panel, find the `deposit` function. Set:
+   - `lockDuration`: `900`
+   - **VALUE field** (top of the Deploy panel): `500000000000000000` (= 0.5 RITUAL in wei)
+     or switch the unit dropdown to **ether** and type `0.5`
+
+8. Click **deposit** → confirm in MetaMask.
+
+9. Verify it worked: call `balanceOf` with your wallet address — should show `500000000000000000`.
+   Call `lockUntil` — should show a block number far in the future.
+
+> **Why this works:** You're calling `deposit()` directly from your EOA (MetaMask), so `msg.sender` is your EOA address. The RitualWallet credits your EOA — exactly what the LLM precompile checks.
+
+
 
 ---
 
