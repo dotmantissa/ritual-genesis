@@ -156,13 +156,21 @@ interface IRitualWallet {
 
 ### 9a — Create a Bounty
 
-In Remix → AIJudgeV2 → `createBounty`:
-- `title`: `"What is the most promising use of on-chain AI?"`
-- `rubric`: `"Judge on clarity, originality, and feasibility. Pick the single best answer."`
-- `deadline`: Current UNIX timestamp + 600 (10 min). Get it: `Math.floor(Date.now()/1000) + 600`
-- **VALUE (send ETH):** `0.1` ether (the bounty prize)
+First, get your deadline number. Run this in the Remix console (bottom panel) or browser console (F12 → Console tab):
 
-Note the returned `bountyId` from the tx logs (usually `1`).
+```javascript
+Math.floor(Date.now()/1000) + 600
+```
+
+It prints a number like `1751053500`. **Copy that number.**
+
+Then in Remix → AIJudgeV2 → `createBounty`, fill in:
+- `title`: `What is the most promising use of on-chain AI?`
+- `rubric`: `Judge on clarity, originality, and feasibility. Pick the single best answer.`
+- `deadline`: paste the number from above (e.g. `1751053500`) — do NOT paste the expression
+- **VALUE:** `0.1` ether
+
+Note the `bountyId` from the tx logs (usually `1`).
 
 ### 9b — Compute Your Commitment Off-chain
 
